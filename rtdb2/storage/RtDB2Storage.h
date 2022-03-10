@@ -8,6 +8,15 @@
 
 #include "RtDB2SyncPoint.h"
 
+// debugging
+#include "tprintf.hpp"
+#ifdef RTDB2_DEBUG_MODE
+    #define rdebug(...) tprintf(__VA_ARGS__)
+#else
+    #define rdebug(...) do {} while(0)
+#endif
+
+
 class RtDB2Storage {
 public:
     virtual ~RtDB2Storage() {}
@@ -17,6 +26,7 @@ public:
     virtual int fetch(std::string key, std::string& value) = 0;
     virtual int fetch_all_data(std::vector<std::pair<std::string, std::string> >& values) = 0;
     virtual int fetch_and_clear(std::string key, std::string& value) = 0;
+    virtual int drop_all_data() = 0;
 
     virtual int append_to_sync_list(const std::string& key, const RtDB2SyncPoint& syncPoint) = 0;
     virtual int get_and_clear_sync_list(const std::string& key, std::vector<RtDB2SyncPoint>& list) = 0;

@@ -40,6 +40,7 @@ void RtDB2::construct()
                     << "Considering default values (zstd with dictionary)" << std::endl;
         _compressor = boost::make_shared<RtDB2CompressorZstd>(ZSTD2_DICTIONARY_FILE);
     }
+    rdebug("constructed for agent=%d path=%s at p=%p", _context.getAgentId(), _context.getDatabasePath().c_str(), this);
 }
 
 RtDB2::RtDB2(RtDB2Context const &context)
@@ -58,7 +59,6 @@ RtDB2::RtDB2(RtDB2Context const &context, int remoteAgentId)
     _context(context)
 {
     construct();
-    rdebug("constructed for agent=%d path=%s at p=%p", agentId, path.c_str(), this);
 }
 
 RtDB2Context const &RtDB2::getContext() const
@@ -504,3 +504,14 @@ std::set<int> RtDB2::getAgentIds() const
     }
     return result;
 }
+
+void RtDB2::reset()
+{
+    // drop all data from all known storages
+    for (auto storage: _storage)
+    {
+        rdebug("dropping storage %d", storage.first);
+        storage.second->drop_all_data();
+    }
+}
+

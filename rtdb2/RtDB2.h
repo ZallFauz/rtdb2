@@ -87,6 +87,9 @@ public:
     void decompress(std::string &s);
     std::set<int> getAgentIds() const;
 
+    // Database control
+    void reset();
+
 private:
     // Helpers
     template <typename T>

@@ -20,6 +20,7 @@ RtDB2LMDB::RtDB2LMDB(std::string parent_path, std::string name) : is_initialized
 }
 
 RtDB2LMDB::~RtDB2LMDB() {
+    rdebug("closing LDMB for storage %s", storage_path_.c_str());
     if (is_initialized_) {
         mdb_dbi_close(env_, dbi_);
         mdb_env_close(env_);
@@ -78,6 +79,24 @@ int RtDB2LMDB::init_storage_if_exists() {
     }
 
     return init_storage();
+}
+
+int RtDB2LMDB::drop_all_data() {
+    int err;
+    if ((err = init_operation(false)) != RTDB2_SUCCESS)
+        return err;
+
+    MDB_txn *txn;
+    err = mdb_txn_begin(env_, NULL, 0, &txn);
+    if (err != 0)
+    {
+        // TODO show details, link, ... better use std exceptions?
+        RTDB_ERROR("RtDB2LMDB::drop_all_data/mdb_txn_begin returned error code %d", err);
+        return RTDB2_INTERNAL_MDB_ERROR;
+    }
+    mdb_drop(txn, dbi_, 0);
+    mdb_txn_commit(txn);
+    return RTDB2_SUCCESS;
 }
 
 int RtDB2LMDB::insert(std::string key, std::string binary_value) {
